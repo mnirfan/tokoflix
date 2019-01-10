@@ -1,0 +1,25 @@
+.top-container {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+.flex-row {
+  display: flex;
+}
+.action-buttons {
+  display: flex;
+  flex-direction: row;
+  .button {
+    text-align: center;
+    padding: 12px;
+    flex-grow: 1;
+    background-color: azure;
+    cursor: pointer;
+    &.primary {
+      background-color: #4FA149;
+      color: white;
+    }
+    &.large {
+      padding: 14px;
+    }
+  }
+}

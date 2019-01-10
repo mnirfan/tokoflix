@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="top-container">
     <h1>Sedang Tayang</h1>
     <div class="movie-list">
       <div class="movie-item" v-for="movie in moviesData.results" :key="movie.id">
@@ -38,6 +38,7 @@
 
 <script>
 import { mapActions } from 'vuex'
+import axios from 'axios'
 import payment from '../helpers/payment'
 export default {
   name: 'Home',
@@ -49,9 +50,20 @@ export default {
   },
   methods: {
     ...mapActions([
-      'getPopularMovies',
       'buyMovie'
     ]),
+    async getPopularMovies ({ state }, page) {
+      let request = await axios({
+        baseURL: this.$store.state.baseUrl,
+        url: '/movie/now_playing',
+        params: {
+          api_key: this.$store.state.token,
+          page,
+          region: 'ID'
+        }
+      })
+      return request.data
+    },
     truncate (text) {
       if (text.length > 160) {
         return text.substring(0, 157) + '...'
@@ -117,20 +129,6 @@ export default {
           right: 0;
           display: flex;
           flex-direction: column;
-          .action-buttons {
-            display: flex;
-            flex-direction: row;
-            .button {
-              text-align: center;
-              padding: 12px;
-              flex-grow: 1;
-              background-color: azure;
-              cursor: pointer;
-              &.primary {
-                background-color: #4FA149;
-              }
-            }
-          }
           .bought {
             padding: 12px;
           }

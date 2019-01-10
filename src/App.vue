@@ -8,14 +8,13 @@
         </div>
       </div>
     </div>
-    <div id="top-container">
-      <router-view/>
-    </div>
+    <router-view/>
   </div>
 </template>
 
 <script>
 import '@/assets/style/reset.css'
+import '@/assets/style/movie.less'
 export default {}
 </script>
 
@@ -44,9 +43,5 @@ export default {}
   .menu {
     // float: right;
   }
-}
-#top-container {
-  max-width: 1000px;
-  margin: 0 auto;
 }
 </style>
