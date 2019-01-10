@@ -22,10 +22,14 @@
                 {{ runtimeText.minutes }} menit
               </span>
             </div>
-            <div class="action-buttons">
-              <div class="button primary large">
+            <div class="action-buttons" v-if="$store.state.boughtMovies.indexOf(movieData.id) < 0">
+              <div class="button primary large" @click="buyMovie(movieData)">
                 Beli Rp{{ moviePrice(movieData) }}
               </div>
+            </div>
+            <div class="bought" v-else>
+              <i class="material-icons">check_circle</i>
+              <span> Anda memiliki film ini</span>
             </div>
           </div>
           <div class="overview">
@@ -35,12 +39,12 @@
         </div>
       </div>
     </div>
-    <div class="top-container complete-info">
-      <div>
+    <div class="top-container">
+      <div class="section-title">
         <h2>Pemeran</h2>
       </div>
       <div class="cast-list">
-        <div class="cast-card" v-for="cast in movieData.credits.cast" :key="cast.id">
+        <div class="cast-card" v-for="cast in cast.slice(0, castCount)" :key="cast.id">
           <div class="photo">
             <img v-if="cast.profile_path" :src="$store.state.castBaseUrl + cast.profile_path">
             <i v-else class="material-icons">person</i>
@@ -48,36 +52,88 @@
           <p class="name">{{ cast.name }}</p>
           <p class="character">{{ cast.character }}</p>
         </div>
-        <!-- <div class="cast-card">
-          <img src="https://image.tmdb.org/t/p/w138_and_h175_face/bRufyz5vvizHfMmz5gscDeaD62c.jpg" alt="">
-          <p class="name">Sissy</p>
-          <p class="character">Milly</p>
-        </div> -->
+      </div>
+      <div>
+        <div v-if="cast.length > 6" class="button" @click="toggleCastCount()">
+          {{ castCount == 6 ? 'Tampilkan selengkapnya' : 'Tampilkan lebih sedikit' }}
+        </div>
+      </div>
+      <div class="section-title">
+        <h2>Rekomendasi</h2>
+      </div>
+      <div class="recomm-list">
+        <div class="recomm-card" v-for="item in recommendations" :key="item.id">
+          <div class="backdrop">
+            <img :src="$store.state.backdropBaseUrl + item.backdrop_path">
+          </div>
+          <div class="flex-row recomtext">
+            <div class="recomm-title">
+              {{ item.original_title }}
+            </div>
+            <div class="verticenter">
+              <i class="material-icons">star</i> <span>{{ item.vote_average }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="section-title">
+        <h2>Serupa</h2>
+      </div>
+      <div class="recomm-list">
+        <div class="recomm-card" v-for="item in similar" :key="item.id">
+          <div class="backdrop">
+            <img :src="$store.state.backdropBaseUrl + item.backdrop_path">
+          </div>
+          <div class="flex-row recomtext">
+            <div class="recomm-title">
+              {{ item.original_title }}
+            </div>
+            <div class="verticenter">
+              <i class="material-icons">star</i> <span>{{ item.vote_average }}</span>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 </template>
 <script>
 import axios from 'axios'
+import { mapActions } from 'vuex'
 import payment from '../helpers/payment'
 export default {
   name: '',
   data () {
     return {
-      movieData: {}
+      movieData: {},
+      castCount: 6,
+      cast: [],
+      recommendations: [],
+      similar: []
     }
   },
   methods: {
+    ...mapActions([
+      'buyMovie'
+    ]),
     async getMovieDetail (id) {
       let request = await axios({
         baseURL: this.$store.state.baseUrl,
         url: `/movie/${id}`,
         params: {
           api_key: this.$store.state.token,
-          append_to_response: 'credits'
+          append_to_response: 'credits,similar,recommendations'
         }
       })
       return request.data
+    },
+    toggleCastCount () {
+      if (this.castCount == 6) {
+        this.castCount = this.cast.length
+      }
+      else {
+        this.castCount = 6
+      }
     }
   },
   computed: {
@@ -94,6 +150,9 @@ export default {
     let id = this.$route.params.movieurl.split('-')[0]
     this.getMovieDetail(id).then(response => {
       this.movieData = response
+      this.cast = response.credits.cast || []
+      this.recommendations = response.recommendations.results || []
+      this.similar = response.similar.results || []
     })
   },
   created () {
@@ -182,6 +241,31 @@ export default {
     }
     &.character {
       margin-bottom: 24px;
+    }
+  }
+}
+.section-title {
+  margin-top: 36px;
+}
+.recomm-list {
+  display: flex;
+  overflow: auto;
+  overflow-x: scroll;
+  .recomm-card {
+    max-width: 250px;
+    box-shadow: 0 2px 4px 0 rgba(0,0,0,0.3);
+    margin-right: 24px;
+    margin-bottom: 24px;
+  }
+  .recomtext {
+    justify-content: space-between;
+    >div {
+      margin: 8px;
+    }
+    .recomm-title {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
   }
 }
