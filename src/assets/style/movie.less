@@ -6,13 +6,22 @@
   display: flex;
 }
 .bought {
+  display: flex;
+  align-items: center;
   i {
     color: #4FA149;
+  }
+  span {
+    margin-left: 8px;
   }
 }
 .verticenter {
   display: flex;
   align-items: center;
+}
+.horizcenter {
+  display: flex;
+  justify-content: center;
 }
 .show-more {
   cursor: pointer;
@@ -21,7 +30,7 @@
   box-shadow: 0 2px 4px 0 rgba(0,0,0,0.15);
   display: inline-block;
   text-align: center;
-  padding: 12px;
+  padding: 12px 24px;
   background-color: rgb(234, 255, 233);
   cursor: pointer;
   &.primary {
@@ -30,6 +39,10 @@
   }
   &.large {
     padding: 14px;
+  }
+  &.icon {
+    display: flex;
+    align-items: center;
   }
 }
 .action-buttons {

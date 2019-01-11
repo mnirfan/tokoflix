@@ -1,5 +1,8 @@
 <template>
-  <div class="top-container">
+  <div v-if="isLoading">
+    <loading/>
+  </div>
+  <div class="top-container" v-else>
     <h1>Sedang Tayang</h1>
     <div class="movie-list">
       <div class="movie-item" v-for="movie in moviesData.results" :key="movie.id">
@@ -10,14 +13,14 @@
           <div class="text">
             <h2>{{movie.original_title}}</h2>
             <div class="rating">
-              <img src="../assets/star.png">
+              <i class="material-icons">star</i>
               {{movie.vote_average}}
             </div>
             <p>{{truncate(movie.overview)}}</p>
           </div>
           <div class="action">
             <div class="bought" v-if="$store.state.boughtMovies.indexOf(movie.id) > -1">
-              Anda telah memiliki film ini
+              <i class="material-icons">check_circle</i> <span>Anda telah memiliki film ini</span>
             </div>
             <div class="action-buttons">
               <div class="button" @click="showDetail(movie)">
@@ -25,44 +28,75 @@
               </div>
               <div v-if="$store.state.boughtMovies.indexOf(movie.id) < 0"
                   class="button primary"
-                  @click="buyMovie(movie)">
-                Beli Rp{{moviePrice(movie.vote_average)}}
+                  @click="confirm(movie)">
+                Beli Rp{{moviePrice(movie.vote_average).toLocaleString('id-ID')}}
               </div>
             </div>
           </div>
         </div>
       </div>
     </div>
+    <div class="horizcenter pagination">
+      <div class="button icon"
+           v-if="page !== 1"
+           @click="$router.push({ path: '/', query: { page: page - 1 } })">
+        <i class="material-icons">keyboard_arrow_left</i>
+        Sebelumnya
+      </div>
+      <div class="button icon" 
+           v-if="page < moviesData.total_pages"
+           @click="$router.push({ path: '/', query: { page: page + 1 } })">
+        Selanjutnya
+        <i class="material-icons">keyboard_arrow_right</i>
+      </div>
+    </div>
+    <modal-buy v-if="showConfirm" 
+               @close="showConfirm = false" 
+               :movie-data="confirmMovie"/>
   </div>
 </template>
 
 <script>
 import { mapActions } from 'vuex'
 import axios from 'axios'
+import Loading from '../components/Loading.vue'
+import ModalBuy from '../components/ModalBuy.vue'
 import payment from '../helpers/payment'
 export default {
   name: 'Home',
+    components: {
+    Loading,
+    ModalBuy
+  },
   data () {
     return {
       moviesData: {},
-      page: this.$route.query.page || 1
+      page: this.$route.query.page || 1,
+      showConfirm: false,
+      confirmMovie: {},
+      isLoading: true
     }
   },
   methods: {
     ...mapActions([
       'buyMovie'
     ]),
+    confirm (movie) {
+      this.confirmMovie = movie
+      this.showConfirm = true
+    },
     async getPopularMovies ({ state }, page) {
-      let request = await axios({
+      let result = await axios({
         baseURL: this.$store.state.baseUrl,
         url: '/movie/now_playing',
         params: {
           api_key: this.$store.state.token,
-          page,
+          page: this.page,
           region: 'ID'
         }
       })
-      return request.data
+      this.moviesData = result.data
+      this.isLoading = false
     },
     truncate (text) {
       if (text.length > 160) {
@@ -75,10 +109,18 @@ export default {
       this.$router.push(`/${movie.id}-${slug}`)
     }
   },
+  watch: {
+    page (to) {
+      this.isLoading = true
+      window.scrollTo(0, 0)
+      this.getPopularMovies(to)
+    },
+    '$route' (to) {
+      this.page = to.query.page || 1
+    }
+  },
   mounted () {
-    this.getPopularMovies(this.page).then(movies => {
-      this.moviesData = movies
-    })
+    this.getPopularMovies(this.page)
   },
   created () {
     this.moviePrice = payment.moviePrice
@@ -87,11 +129,18 @@ export default {
 </script>
 
 <style lang="less" scoped>
+  .pagination {
+    >* {
+      margin-left: 8px;
+      margin-right: 8px;
+    }
+  }
   .movie-list {
     display: flex;
     flex-wrap: wrap;
     flex-direction: row;
     justify-content: space-between;
+    margin-bottom: 24px;
     .movie-item {
       width: 48%;
       margin-bottom: 16px;

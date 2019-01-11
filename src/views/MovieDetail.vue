@@ -1,8 +1,13 @@
 <template>
-  <div>
+  <div v-if="isLoading">
+    <loading/>
+  </div>
+  <div v-else>
     <div class="header">
       <div class="top-container flex-row">
-        <img class="poster" :src="$store.state.imgBaseUrl + movieData.poster_path">
+        <div class="poster">
+          <img :src="$store.state.imgBaseUrl + movieData.poster_path">
+        </div>
         <div class="info">
           <div id="title">
             <strong>{{ movieData.original_title }}</strong>
@@ -23,8 +28,8 @@
               </span>
             </div>
             <div class="action-buttons" v-if="$store.state.boughtMovies.indexOf(movieData.id) < 0">
-              <div class="button primary large" @click="buyMovie(movieData)">
-                Beli Rp{{ moviePrice(movieData) }}
+              <div class="button primary large" @click="showConfirm = true">
+                Beli Rp{{ moviePrice(movieData.vote_average).toLocaleString('id-ID') }}
               </div>
             </div>
             <div class="bought" v-else>
@@ -62,9 +67,13 @@
         <h2>Rekomendasi</h2>
       </div>
       <div class="recomm-list">
-        <div class="recomm-card" v-for="item in recommendations" :key="item.id">
+        <div class="recomm-card" 
+             v-for="item in recommendations" 
+             :key="item.id"
+             @click="$router.push({ path: `/${item.id}-${item.original_title.replace(/\W+/g, '-')}` })">
           <div class="backdrop">
-            <img :src="$store.state.backdropBaseUrl + item.backdrop_path">
+            <img v-if="item.backdrop_path" :src="$store.state.backdropBaseUrl + item.backdrop_path">
+            <i v-else class="material-icons">broken_image</i>
           </div>
           <div class="flex-row recomtext">
             <div class="recomm-title">
@@ -80,7 +89,10 @@
         <h2>Serupa</h2>
       </div>
       <div class="recomm-list">
-        <div class="recomm-card" v-for="item in similar" :key="item.id">
+        <div class="recomm-card" 
+             v-for="item in similar" 
+             :key="item.id"
+             @click="$router.push(`/${item.id}-${item.original_title.replace(/\W+/g, '-')}`)">
           <div class="backdrop">
             <img :src="$store.state.backdropBaseUrl + item.backdrop_path">
           </div>
@@ -95,29 +107,41 @@
         </div>
       </div>
     </div>
+    <modal-buy v-if="showConfirm" 
+               @close="showConfirm = false" 
+               :movie-data="movieData"/>
   </div>
 </template>
 <script>
 import axios from 'axios'
 import { mapActions } from 'vuex'
 import payment from '../helpers/payment'
+import Loading from '../components/Loading.vue'
+import ModalBuy from '../components/ModalBuy.vue'
 export default {
   name: '',
+  components: {
+    Loading,
+    ModalBuy
+  },
   data () {
     return {
       movieData: {},
       castCount: 6,
       cast: [],
       recommendations: [],
-      similar: []
+      similar: [],
+      isLoading: true,
+      showConfirm: false
     }
   },
   methods: {
     ...mapActions([
       'buyMovie'
     ]),
-    async getMovieDetail (id) {
-      let request = await axios({
+    async getMovieDetail () {
+      let id = this.$route.params.movieurl.split('-')[0]
+      let response = await axios({
         baseURL: this.$store.state.baseUrl,
         url: `/movie/${id}`,
         params: {
@@ -125,7 +149,11 @@ export default {
           append_to_response: 'credits,similar,recommendations'
         }
       })
-      return request.data
+      this.movieData = response.data
+      this.cast = response.data.credits.cast || []
+      this.recommendations = response.data.recommendations.results || []
+      this.similar = response.data.similar.results || []
+      this.isLoading = false
     },
     toggleCastCount () {
       if (this.castCount == 6) {
@@ -146,17 +174,16 @@ export default {
       return duration
     }
   },
-  mounted () {
-    let id = this.$route.params.movieurl.split('-')[0]
-    this.getMovieDetail(id).then(response => {
-      this.movieData = response
-      this.cast = response.credits.cast || []
-      this.recommendations = response.recommendations.results || []
-      this.similar = response.similar.results || []
-    })
+  watch: {
+    '$route' (to, from) {
+      this.isLoading = true
+      window.scrollTo(0, 0)
+      this.getMovieDetail()
+    }
   },
   created () {
     this.moviePrice = payment.moviePrice
+    this.getMovieDetail()
   }
 }
 </script>
@@ -255,7 +282,25 @@ export default {
     max-width: 250px;
     box-shadow: 0 2px 4px 0 rgba(0,0,0,0.3);
     margin-right: 24px;
+    margin-left: 4px;
     margin-bottom: 24px;
+    cursor: pointer;
+    .backdrop {
+      width: 250px;
+      height: 141px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: rgb(65, 65, 65);
+      color: rgb(197, 197, 197);
+      i {
+        font-size: 42px;
+      }
+      img {
+        width: 100%;
+        height: 100%;
+      }
+    }
   }
   .recomtext {
     justify-content: space-between;

@@ -1,14 +1,17 @@
 <template>
   <div id="app">
     <div id="nav">
-      <div class="logo">TokoFlix</div>
+      <div class="logo" @click="$router.push('/')">TokoFlix</div>
       <div class="menu">
         <div>
-          Saldo <span style="color: #4FA149; font-weight: bold;">Rp{{$store.state.balance}}</span>
+          Saldo <span style="color: #4FA149; font-weight: bold;">Rp{{$store.state.balance.toLocaleString('id-ID')}}</span>
         </div>
       </div>
     </div>
     <router-view/>
+    <div id="footer">
+      &copy; 2019 TokoFlix
+    </div>
   </div>
 </template>
 
@@ -38,10 +41,17 @@ export default {}
     color: #4FA149;
     font-size: 24px;
     font-weight: bold;
-    // float: left;
+    cursor: pointer;
   }
-  .menu {
-    // float: right;
-  }
+}
+#footer {
+  height: 50px;
+  margin-top: 36px;
+  background-color: #2c3e50;
+  color: white;
+  padding: 12px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 </style>
