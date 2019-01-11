@@ -43,15 +43,15 @@
         <i class="material-icons">keyboard_arrow_left</i>
         Sebelumnya
       </div>
-      <div class="button icon" 
+      <div class="button icon"
            v-if="page < moviesData.total_pages"
            @click="$router.push({ path: '/', query: { page: page + 1 } })">
         Selanjutnya
         <i class="material-icons">keyboard_arrow_right</i>
       </div>
     </div>
-    <modal-buy v-if="showConfirm" 
-               @close="showConfirm = false" 
+    <modal-buy v-if="showConfirm"
+               @close="showConfirm = false"
                :movie-data="confirmMovie"/>
   </div>
 </template>
@@ -64,7 +64,7 @@ import ModalBuy from '../components/ModalBuy.vue'
 import payment from '../helpers/payment'
 export default {
   name: 'Home',
-    components: {
+  components: {
     Loading,
     ModalBuy
   },

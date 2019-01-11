@@ -67,8 +67,8 @@
         <h2>Rekomendasi</h2>
       </div>
       <div class="recomm-list">
-        <div class="recomm-card" 
-             v-for="item in recommendations" 
+        <div class="recomm-card"
+             v-for="item in recommendations"
              :key="item.id"
              @click="$router.push({ path: `/${item.id}-${item.original_title.replace(/\W+/g, '-')}` })">
           <div class="backdrop">
@@ -89,8 +89,8 @@
         <h2>Serupa</h2>
       </div>
       <div class="recomm-list">
-        <div class="recomm-card" 
-             v-for="item in similar" 
+        <div class="recomm-card"
+             v-for="item in similar"
              :key="item.id"
              @click="$router.push(`/${item.id}-${item.original_title.replace(/\W+/g, '-')}`)">
           <div class="backdrop">
@@ -107,8 +107,8 @@
         </div>
       </div>
     </div>
-    <modal-buy v-if="showConfirm" 
-               @close="showConfirm = false" 
+    <modal-buy v-if="showConfirm"
+               @close="showConfirm = false"
                :movie-data="movieData"/>
   </div>
 </template>
@@ -156,17 +156,13 @@ export default {
       this.isLoading = false
     },
     toggleCastCount () {
-      if (this.castCount == 6) {
-        this.castCount = this.cast.length
-      }
-      else {
-        this.castCount = 6
-      }
+      if (this.castCount === 6) this.castCount = this.cast.length
+      else this.castCount = 6
     }
   },
   computed: {
     runtimeText () {
-      let duration = {hour: 0, minutes: 0}
+      let duration = { hour: 0, minutes: 0 }
       if (this.movieData.runtime) {
         duration.hour = Math.floor(this.movieData.runtime / 60)
         duration.minutes = this.movieData.runtime - (duration.hour * 60)
