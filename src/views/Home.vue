@@ -36,6 +36,9 @@
         </div>
       </div>
     </div>
+    <div class="horizcenter pagination-status">
+      halaman {{ page }}/{{ moviesData.total_pages }}
+    </div>
     <div class="horizcenter pagination">
       <div class="button icon"
            v-if="page !== 1"
@@ -134,6 +137,9 @@ export default {
       margin-left: 8px;
       margin-right: 8px;
     }
+  }
+  .pagination-status {
+    margin: 12px;
   }
   .movie-list {
     display: flex;
